@@ -86,6 +86,10 @@ resource "aws_instance" "web" {
 
 ## Clean up your infrastructure
 
+Now that you have verified that the EC2 instance is publicly available, run terraform destroy to destroy the resources. Remember to respond to the confirmation prompt with yes.
+
+`terraform destroy`
+
 ## Head over to this to see the EC2 instance deploying the PHP application:
 
 http://ec2-52-39-100-11.us-west-2.compute.amazonaws.com/index.php
