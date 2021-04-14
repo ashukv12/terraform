@@ -27,11 +27,11 @@ Here we will use output values to organize data to be easily queried and to be s
 
  1. To apply the change to the existing resources, use:
 
-  `terraform apply`
+    `terraform apply`
 
  2. Query the outputs using this command:
 
-  `terraform output`
+    `terraform output`
 
   As indicated by the execution plan, Terraform first destroyed the existing instance and then created a new one in its place.
 
