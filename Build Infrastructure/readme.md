@@ -12,7 +12,7 @@ Here we will have our first infrastructure created, i.e, provision an EC2 instan
 
 - Configure the AWS CLI from your terminal
 
-`aws configure`
+    `aws configure`
 
 - Write configuration
 
