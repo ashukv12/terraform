@@ -1,5 +1,7 @@
 # Build Infrastructure
 
+Here we will have our first infrastructure created, i.e, provision an EC2 instance on Amazon Web Services (AWS).
+
 ## Prerequisites
 - The Terraform CLI installed.
 - The AWS CLI installed.
@@ -37,7 +39,8 @@ This will download the aws provider and installs it in a hidden subdirectory of 
 Now, infrastructure using Terraform has been created. Just visit the EC2 console and find your new EC2 instance.
 
 - Inspect state
+
 1. Inspect the current state using:
 
-  `terraform show`
+    `terraform show`
 
