@@ -9,11 +9,14 @@ This repo is a companion repo to the [Define Infrastructure with Terraform Resou
 
 
 ## Set up and explore your Terraform workspace
-- git clone https://github.com/hashicorp/learn-terraform-resources.git
-- cd learn-terraform-resources
+- `git clone https://github.com/hashicorp/learn-terraform-resources.git`
+- `cd learn-terraform-resources`
 
 ## Explore the random pet name resource
+
 `resource "random_pet" "name" {}`
+
+The random pet name resource block defines a `random_pet` resource named `name` to generate a random pet name. You will use the name that the `random_pet` resource generates to create a unique name for your EC2 instance.
 
 ## Explore the EC2 instance resource
 
@@ -29,13 +32,37 @@ resource "aws_instance" "web" {
 }
 ```
 
+The aws_instance.web resource block defines an aws_instance resource named web to create an AWS EC2 instance.
+
 ## Initialize and apply Terraform configuration
-- terraform init
-- terraform apply
+- Initialize the directory, using `terraform init`
+- Apply your configuration, use `terraform apply` and respond `yes`.
 
 ## Add security group to instance
 
 Open the AWS Provider documentation page. Search for security_group and select the aws_security_group resource.
+
+- Add security group resource as given below:
+
+```
+resource "aws_security_group" "web-sg" {
+  name = "${random_pet.name.id}-sg"
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+```
+- Add the vpc_security_group_ids argument to the aws_instance.web resource as a list by placing the aws_security_group.web-sg.id attribute inside square brackets.
 
 ```
 resource "aws_instance" "web" {
@@ -49,6 +76,13 @@ resource "aws_instance" "web" {
   }
 }
 ```
+- Apply your configuration. Remember to confirm your apply with a yes
+
+`terraform apply`
+
+- Verify that your EC2 instance is now publicly accessible.
+
+`terraform output application-url`
 
 ## Clean up your infrastructure
 
