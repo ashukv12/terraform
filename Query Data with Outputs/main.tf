@@ -1,3 +1,4 @@
+
 terraform {
   required_providers {
     aws = {
@@ -9,14 +10,14 @@ terraform {
 
 provider "aws" {
   profile = "default"
-  region  = var.region1
+  region  = "us-west-2"
 }
 
-resource "aws_instance" "example" {
-  ami           = "ami-0742b4e673072066f"
+resource "aws_instance" "app_server" {
+  ami           = "ami-08d70e59c07c61a3a"
   instance_type = "t2.micro"
 
-  tags =  {
-      Name = var.region2
+  tags = {
+    Name = var.instance_name
   }
 }
