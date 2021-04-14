@@ -38,6 +38,6 @@ Now, infrastructure using Terraform has been created. Just visit the EC2 console
 
 - Inspect state
 1. Inspect the current state using:
-2. 
+
   `terraform show`
 
