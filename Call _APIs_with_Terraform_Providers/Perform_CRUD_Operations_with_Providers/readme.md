@@ -49,31 +49,31 @@
 
     - Add the following to your main.tf file.
 
-    This authenticate the HashiCups provider, create an order and return the order's values in your output. The order contains total of 4 coffees: 2 of each coffee_id 3 and 2.
+        This authenticate the HashiCups provider, create an order and return the order's values in your output. The order contains total of 4 coffees: 2 of each coffee_id 3 and 2.
 
-    ```provider "hashicups" {
-          username = "education"
-          password = "test123"
-        }
-
-        resource "hashicups_order" "edu" {
-          items {
-            coffee {
-              id = 3
+        ```provider "hashicups" {
+              username = "education"
+              password = "test123"
             }
-            quantity = 2
-          }
-          items {
-            coffee {
-              id = 2
-            }
-            quantity = 2
-          }
-        }
 
-        output "edu_order" {
-          value = hashicups_order.edu
-        }
+            resource "hashicups_order" "edu" {
+              items {
+                coffee {
+                  id = 3
+                }
+                quantity = 2
+              }
+              items {
+                coffee {
+                  id = 2
+                }
+                quantity = 2
+              }
+            }
+
+            output "edu_order" {
+              value = hashicups_order.edu
+            }
         
     - `terraform apply`
     - `terraform state show hashicups_order.edu`
