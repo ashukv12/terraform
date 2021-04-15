@@ -153,5 +153,3 @@
    
    
 Now, a Terraform provider and data resource to reference information from an API in the Terraform configuration has been created.    
-
-Then, at last, verify if order is created.
