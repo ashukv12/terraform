@@ -27,28 +27,102 @@
         `./terraform-provider-hashicups`
 
 
-3. Create new HashiCups user
+3. Define coffees schema
 
-    - `curl -X POST localhost:19090/signup -d '{"username":"education", "password":"test123"}'`
-    - `curl -X POST localhost:19090/signin -d '{"username":"education", "password":"test123"}'`
-    - `export HASHICUPS_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTEwNzgwODUsInVzZXJfaWQiOjIsInVzZXJuYW1lIjoiZWR1Y2F0aW9uIn0.CguceCNILKdjOQ7Gx0u4UAMlOTaH3Dw-fsll2iXDrYU`
+    - `curl localhost:19090/coffees`
+    - Update your coffees data source's schema with the following code snippet: 
+        ```
+        Schema: map[string]*schema.Schema{
+          "coffees": &schema.Schema{
+            Type:     schema.TypeList,
+            Computed: true,
+            Elem: &schema.Resource{
+              Schema: map[string]*schema.Schema{
+                "id": &schema.Schema{
+                  Type:     schema.TypeInt,
+                  Computed: true,
+                },
+                "name": &schema.Schema{
+                  Type:     schema.TypeString,
+                  Computed: true,
+                },
+                "teaser": &schema.Schema{
+                  Type:     schema.TypeString,
+                  Computed: true,
+                },
+                "description": &schema.Schema{
+                  Type:     schema.TypeString,
+                  Computed: true,
+                },
+                "price": &schema.Schema{
+                  Type:     schema.TypeInt,
+                  Computed: true,
+                },
+                "image": &schema.Schema{
+                  Type:     schema.TypeString,
+                  Computed: true,
+                },
+                "ingredients": &schema.Schema{
+                  Type:     schema.TypeList,
+                  Computed: true,
+                  Elem: &schema.Resource{
+                    Schema: map[string]*schema.Schema{
+                      "ingredient_id": &schema.Schema{
+                        Type:     schema.TypeInt,
+                        Computed: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
 
-    Now that the HashiCups app is running, you're ready to interact with it using the Terraform provider.
-  
-4. Initialize workspace
+        
+    - `go fmt ./...`
+    
+    Note: The coffees schema is a schema.TypeList of coffee (schema.Resource).
+       
+4. Implement read
 
-    - Add the following to your main.tf file. This is required for Terraform 0.13+.
+    - Add the following read function to your hashicups/data_source_coffee.go file.
 
-        ```terraform {
-              required_providers {
-                hashicups = {
-                  version = "~> 0.3.1"
-                  source  = "hashicorp.com/edu/hashicups"
-                }
+        ```func dataSourceCoffeesRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+              client := &http.Client{Timeout: 10 * time.Second}
+
+              // Warning or errors can be collected in a slice type
+              var diags diag.Diagnostics
+
+              req, err := http.NewRequest("GET", fmt.Sprintf("%s/coffees", "http://localhost:19090"), nil)
+              if err != nil {
+                return diag.FromErr(err)
               }
+
+              r, err := client.Do(req)
+              if err != nil {
+                return diag.FromErr(err)
+              }
+              defer r.Body.Close()
+
+              coffees := make([]map[string]interface{}, 0)
+              err = json.NewDecoder(r.Body).Decode(&coffees)
+              if err != nil {
+                return diag.FromErr(err)
+              }
+
+              if err := d.Set("coffees", coffees); err != nil {
+                return diag.FromErr(err)
+              }
+
+              // always run
+              d.SetId(strconv.FormatInt(time.Now().Unix(), 10))
+
+              return diags
             }
 
-    - `terraform init`
+
+    - `go fmt ./...`
 
 5. Create order
 
