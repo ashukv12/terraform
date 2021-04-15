@@ -112,9 +112,10 @@
     - `mv terraform-provider-hashicups ~/.terraform.d/plugins/hashicorp.com/edu/hashicups/0.2/$OS_ARCH`
     - `cd examples`
     - Set HASHICUPS_USERNAME and HASHICUPS_PASSWORD to education and test123 respectively.
-        - $ export HASHICUPS_USERNAME=education
-        - $ export HASHICUPS_PASSWORD=test123
+        - $ `export HASHICUPS_USERNAME=education`
+        - $ `export HASHICUPS_PASSWORD=test123`
+        
     - `terraform init && terraform apply --auto-approve`
    
    
-Now, a Terraform provider and data resource to reference information from an API in the Terraform configuration has been created.    
+Finally, we have added authentication to our HashiCups provider.
