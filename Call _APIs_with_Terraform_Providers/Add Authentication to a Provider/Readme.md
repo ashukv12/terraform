@@ -103,13 +103,7 @@
     - Save your hashicups/provider.go file, then run go mod vendor to download the API client library into your /vendor directory.
          `go mod vendor`
     
-5. »Test the provider
-
-    - In your hashicups/provider.go file, add the coffees data source to the DataSourcesMap:
-    
-        ```DataSourcesMap: map[string]*schema.Resource{
-                "hashicups_coffees":     dataSourceCoffees(),
-           },
+6. Test the provider
         
     - `pwd`
     - `go build -o terraform-provider-hashicups`
@@ -117,6 +111,9 @@
     - ` mkdir -p ~/.terraform.d/plugins/hashicorp.com/edu/hashicups/0.2/$OS_ARCH`
     - `mv terraform-provider-hashicups ~/.terraform.d/plugins/hashicorp.com/edu/hashicups/0.2/$OS_ARCH`
     - `cd examples`
+    - Set HASHICUPS_USERNAME and HASHICUPS_PASSWORD to education and test123 respectively.
+        - $ export HASHICUPS_USERNAME=education
+        - $ export HASHICUPS_PASSWORD=test123
     - `terraform init && terraform apply --auto-approve`
    
    
