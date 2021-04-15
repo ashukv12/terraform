@@ -124,38 +124,34 @@
 
     - `go fmt ./...`
 
-5. Create order
+5. Add data source to provider
 
-    - Add the following to your main.tf file.
-
-        This authenticate the HashiCups provider, create an order and return the order's values in your output. The order contains total of 4 coffees: 2 of each coffee_id 3 and 2.
-
-        ```provider "hashicups" {
-              username = "education"
-              password = "test123"
-            }
-
-            resource "hashicups_order" "edu" {
-              items {
-                coffee {
-                  id = 3
-                }
-                quantity = 2
-              }
-              items {
-                coffee {
-                  id = 2
-                }
-                quantity = 2
-              }
-            }
-
-            output "edu_order" {
-              value = hashicups_order.edu
-            }
+    - In your hashicups/provider.go file, add the coffees data source to the DataSourcesMap:
+    
+        ```DataSourcesMap: map[string]*schema.Resource{
+                "hashicups_coffees":     dataSourceCoffees(),
+           },
         
-    - `terraform apply`
+    - `go fmt ./...`
     - `terraform state show hashicups_order.edu`
     
+5. »Test the provider
+
+    - In your hashicups/provider.go file, add the coffees data source to the DataSourcesMap:
+    
+        ```DataSourcesMap: map[string]*schema.Resource{
+                "hashicups_coffees":     dataSourceCoffees(),
+           },
+        
+    - `pwd`
+    - `go build -o terraform-provider-hashicups`
+    - `export OS_ARCH="$(go env GOHOSTOS)_$(go env GOHOSTARCH)"`
+    - ` mkdir -p ~/.terraform.d/plugins/hashicorp.com/edu/hashicups/0.2/$OS_ARCH`
+    - `mv terraform-provider-hashicups ~/.terraform.d/plugins/hashicorp.com/edu/hashicups/0.2/$OS_ARCH`
+    - `cd examples`
+    - `terraform init && terraform apply --auto-approve`
+   
+   
+Now, a Terraform provider and data resource to reference information from an API in the Terraform configuration has been created.    
 
 Then, at last, verify if order is created.
