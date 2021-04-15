@@ -62,16 +62,46 @@
 
     - `go fmt ./...`
 
-5. Add data source to provider
+5. Define providerConfigure
 
-    - In your hashicups/provider.go file, add the coffees data source to the DataSourcesMap:
+    - Import the context, API client and diag libraries into the provider.go file. The providerConfigure function will use these libraries:
     
-        ```DataSourcesMap: map[string]*schema.Resource{
+        ```"context"
+           "github.com/hashicorp-demoapp/hashicups-client-go"
+           "github.com/hashicorp/terraform-plugin-sdk/v2/diag"DataSourcesMap: map[string]*schema.Resource{
                 "hashicups_coffees":     dataSourceCoffees(),
            },
-        
+    
+    - Add the providerConfigure function below your Provider() function. This function retrieves the username and password from the provider schema to authenticate and configure your provider:
+    
+        ```func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+              username := d.Get("username").(string)
+              password := d.Get("password").(string)
+
+              // Warning or errors can be collected in a slice type
+              var diags diag.Diagnostics
+
+              if (username != "") && (password != "") {
+                c, err := hashicups.NewClient(nil, &username, &password)
+                if err != nil {
+                  return nil, diag.FromErr(err)
+                }
+
+                return c, diags
+              }
+
+              c, err := hashicups.NewClient(nil, nil, nil)
+              if err != nil {
+                return nil, diag.FromErr(err)
+              }
+
+              return c, diags
+            }
+
+    
     - `go fmt ./...`
-    - `terraform state show hashicups_order.edu`
+    - Save your hashicups/provider.go file, then run go mod vendor to download the API client library into your /vendor directory.
+         `go mod vendor`
     
 5. »Test the provider
 
