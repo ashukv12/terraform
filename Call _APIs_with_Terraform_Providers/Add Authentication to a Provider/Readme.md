@@ -117,5 +117,13 @@
         
     - `terraform init && terraform apply --auto-approve`
    
-   
+Check the terminal containing your HashiCups logs for the recorded operations invoked by the HashiCups provider.
+
+    api_1  | 2020-12-10T09:26:23.349Z [INFO]  Handle User | signin
+    api_1  | 2020-12-10T09:26:23.357Z [INFO]  Handle Coffee
+    api_1  | 2020-12-10T09:26:23.488Z [INFO]  Handle User | signin
+    api_1  | 2020-12-10T09:26:23.606Z [INFO]  Handle User | signin
+    
+The provider should have invoked a request to the signin endpoint.   
+
 Finally, we have added authentication to our HashiCups provider.
