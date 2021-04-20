@@ -162,22 +162,31 @@
     - `go fmt ./...`
     - In your hashicups/provider.go file, add the order data source to the DataSourcesMap of your Provider() function
         `"hashicups_order":       dataSourceOrder(),`
-        
+  
+
+2. Build provider binary
+
+    - `pwd`
+    - `go build -o terraform-provider-hashicups`
+    - `export OS_ARCH="$(go env GOHOSTOS)_$(go env GOHOSTARCH)"`
+    - `mkdir -p ~/.terraform.d/plugins/hashicorp.com/edu/hashicups/0.2/$OS_ARCH`
+    - `make build`
     - `mv terraform-provider-hashicups ~/.terraform.d/plugins/hashicorp.com/edu/hashicups/0.2/$OS_ARCH`
     - `cd examples`
-    - Set HASHICUPS_USERNAME and HASHICUPS_PASSWORD to education and test123 respectively.
-        - $ `export HASHICUPS_USERNAME=education`
-        - $ `export HASHICUPS_PASSWORD=test123`
+    - Add the following Terraform configuration to main.tf:
+        ```
+        data "hashicups_order" "order" {
+          id = 1
+        }
+
+        output "order" {
+          value = data.hashicups_order.order
+        }
+
         
     - `terraform init && terraform apply --auto-approve`
-   
-Check the terminal containing your HashiCups logs for the recorded operations invoked by the HashiCups provider.
 
-    api_1  | 2020-12-10T09:26:23.349Z [INFO]  Handle User | signin
-    api_1  | 2020-12-10T09:26:23.357Z [INFO]  Handle Coffee
-    api_1  | 2020-12-10T09:26:23.488Z [INFO]  Handle User | signin
-    api_1  | 2020-12-10T09:26:23.606Z [INFO]  Handle User | signin
     
 The provider should have invoked a request to the signin endpoint.   
 
-Finally, we have added authentication to our HashiCups provider.
+Finally, we have implemented a nested read function. This will be useful when we will create a resource using the HashiCups provider in the Implement Create tutorial.
