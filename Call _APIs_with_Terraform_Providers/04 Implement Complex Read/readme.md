@@ -39,51 +39,130 @@
     
 5. Define order data resource
 
-    - Import the context, API client and diag libraries into the provider.go file. The providerConfigure function will use these libraries:
+    - Now, create a file named hashicups/data_source_order.go in your hashicups directory and add the following snippet:
     
-        ```"context"
-           "github.com/hashicorp-demoapp/hashicups-client-go"
-           "github.com/hashicorp/terraform-plugin-sdk/v2/diag"DataSourcesMap: map[string]*schema.Resource{
-                "hashicups_coffees":     dataSourceCoffees(),
-           },
-    
-    - Add the providerConfigure function below your Provider() function. This function retrieves the username and password from the provider schema to authenticate and configure your provider:
-    
-        ```func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-              username := d.Get("username").(string)
-              password := d.Get("password").(string)
+        ```package hashicups
 
-              // Warning or errors can be collected in a slice type
-              var diags diag.Diagnostics
+            import (
+              "context"
+              "strconv"
 
-              if (username != "") && (password != "") {
-                c, err := hashicups.NewClient(nil, &username, &password)
-                if err != nil {
-                  return nil, diag.FromErr(err)
-                }
+              hc "github.com/hashicorp-demoapp/hashicups-client-go"
+              "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+              "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+            )
 
-                return c, diags
+            func dataSourceOrder() *schema.Resource {
+              return &schema.Resource{
+                ReadContext: dataSourceOrderRead,
+                Schema: map[string]*schema.Schema{
+                  "id": &schema.Schema{
+                    Type:     schema.TypeInt,
+                    Required: true,
+                  },
+                  "items": &schema.Schema{
+                    Type:     schema.TypeList,
+                    Computed: true,
+                    Elem: &schema.Resource{
+                      Schema: map[string]*schema.Schema{
+                        "coffee_id": &schema.Schema{
+                          Type:     schema.TypeInt,
+                          Computed: true,
+                        },
+                        "coffee_name": &schema.Schema{
+                          Type:     schema.TypeString,
+                          Computed: true,
+                        },
+                        "coffee_teaser": &schema.Schema{
+                          Type:     schema.TypeString,
+                          Computed: true,
+                        },
+                        "coffee_description": &schema.Schema{
+                          Type:     schema.TypeString,
+                          Computed: true,
+                        },
+                        "coffee_price": &schema.Schema{
+                          Type:     schema.TypeInt,
+                          Computed: true,
+                        },
+                        "coffee_image": &schema.Schema{
+                          Type:     schema.TypeString,
+                          Computed: true,
+                        },
+                        "quantity": &schema.Schema{
+                          Type:     schema.TypeInt,
+                          Computed: true,
+                        },
+                      },
+                    },
+                  },
+                },
               }
-
-              c, err := hashicups.NewClient(nil, nil, nil)
-              if err != nil {
-                return nil, diag.FromErr(err)
-              }
-
-              return c, diags
             }
+
 
     
     - `go fmt ./...`
-    - Save your hashicups/provider.go file, then run go mod vendor to download the API client library into your /vendor directory.
-         `go mod vendor`
     
-6. Test the provider
+    
+6. Implement complex read
         
-    - `pwd`
-    - `go build -o terraform-provider-hashicups`
-    - `export OS_ARCH="$(go env GOHOSTOS)_$(go env GOHOSTARCH)"`
-    - ` mkdir -p ~/.terraform.d/plugins/hashicorp.com/edu/hashicups/0.2/$OS_ARCH`
+    - Add the dataSourceOrderRead function to hashicups/data_source_order.go
+        ```
+        func dataSourceOrderRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+          c := m.(*hc.Client)
+
+          // Warning or errors can be collected in a slice type
+          var diags diag.Diagnostics
+
+          orderID := strconv.Itoa(d.Get("id").(int))
+
+          order, err := c.GetOrder(orderID)
+          if err != nil {
+            return diag.FromErr(err)
+          }
+
+          orderItems := flattenOrderItemsData(&order.Items)
+          if err := d.Set("items", orderItems); err != nil {
+            return diag.FromErr(err)
+          }
+
+          d.SetId(orderID)
+
+          return diags
+        }
+
+    - `go fmt ./...`
+    - Add the flattenOrderItemsData function to your hashicups/data_source_order.go file:
+        ```
+        func flattenOrderItemsData(orderItems *[]hc.OrderItem) []interface{} {
+          if orderItems != nil {
+            ois := make([]interface{}, len(*orderItems), len(*orderItems))
+
+            for i, orderItem := range *orderItems {
+              oi := make(map[string]interface{})
+
+              oi["coffee_id"] = orderItem.Coffee.ID
+              oi["coffee_name"] = orderItem.Coffee.Name
+              oi["coffee_teaser"] = orderItem.Coffee.Teaser
+              oi["coffee_description"] = orderItem.Coffee.Description
+              oi["coffee_price"] = orderItem.Coffee.Price
+              oi["coffee_image"] = orderItem.Coffee.Image
+              oi["quantity"] = orderItem.Quantity
+
+              ois[i] = oi
+            }
+
+            return ois
+          }
+
+          return make([]interface{}, 0)
+        }
+
+    - `go fmt ./...`
+    - In your hashicups/provider.go file, add the order data source to the DataSourcesMap of your Provider() function
+        `"hashicups_order":       dataSourceOrder(),`
+        
     - `mv terraform-provider-hashicups ~/.terraform.d/plugins/hashicorp.com/edu/hashicups/0.2/$OS_ARCH`
     - `cd examples`
     - Set HASHICUPS_USERNAME and HASHICUPS_PASSWORD to education and test123 respectively.
