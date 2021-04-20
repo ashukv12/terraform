@@ -189,8 +189,112 @@
     - `hc "github.com/hashicorp-demoapp/hashicups-client-go"`
     - `go fmt ./...`
 
-    
-The provider should have invoked a request to the signin endpoint.   
+8. Implement read
 
-Finally, we have implemented a nested read function. This will be useful when we will create a resource using the HashiCups provider in the Implement Create tutorial.
+    - 
+        ```
+        func resourceOrderRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+          c := m.(*hc.Client)
+
+          // Warning or errors can be collected in a slice type
+          var diags diag.Diagnostics
+
+          orderID := d.Id()
+
+          order, err := c.GetOrder(orderID)
+          if err != nil {
+            return diag.FromErr(err)
+          }
+
+          orderItems := flattenOrderItems(&order.Items)
+          if err := d.Set("items", orderItems); err != nil {
+            return diag.FromErr(err)
+          }
+
+          return diags
+        }
+        
+    -`go fmt ./...`
+    
+    
+9. Add flattening functions
+
+    - 
+        ```
+        func flattenOrderItems(orderItems *[]hc.OrderItem) []interface{} {
+          if orderItems != nil {
+            ois := make([]interface{}, len(*orderItems), len(*orderItems))
+
+            for i, orderItem := range *orderItems {
+              oi := make(map[string]interface{})
+
+              oi["coffee"] = flattenCoffee(orderItem.Coffee)
+              oi["quantity"] = orderItem.Quantity
+              ois[i] = oi
+            }
+
+            return ois
+          }
+
+          return make([]interface{}, 0)
+        }
+        
+    - 
+        ```
+        func flattenCoffee(coffee hc.Coffee) []interface{} {
+          c := make(map[string]interface{})
+          c["id"] = coffee.ID
+          c["name"] = coffee.Name
+          c["teaser"] = coffee.Teaser
+          c["description"] = coffee.Description
+          c["price"] = coffee.Price
+          c["image"] = coffee.Image
+
+          return []interface{}{c}
+        }
+      
+    -`go fmt ./...`
+    
+10. Add read function to create function
+
+    - `resourceOrderRead(ctx, d, m)`
+    - `go fmt ./...`
+
+11. Add order resource to provider
+
+    - `"hashicups_order": resourceOrder(),`
+    - `go fmt ./...`
+
+12. Test the provider
+
+    - `go build -o terraform-provider-hashicups`
+    - `export OS_ARCH="$(go env GOHOSTOS)_$(go env GOHOSTARCH)"`
+    - `mkdir -p ~/.terraform.d/plugins/hashicorp.com/edu/hashicups/0.2/$OS_ARCH`
+    - `mv terraform-provider-hashicups ~/.terraform.d/plugins/hashicorp.com/edu/hashicups/0.2/$OS_ARCH`
+    - `cd examples`
+    - 
+        ```
+        resource "hashicups_order" "edu" {
+          items {
+            coffee {
+              id = 3
+            }
+            quantity = 2
+          }
+          items {
+            coffee {
+              id = 2
+            }
+            quantity = 2
+          }
+        }
+
+        output "edu_order" {
+          value = hashicups_order.edu
+        }
+        
+    - `terraform init && terraform apply --auto-approve` 
+     
+
+Finally, we have created the order resource with create and read capabilities.
 
